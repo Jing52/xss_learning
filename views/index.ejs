@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src='../public/javascripts/encode.js'></script>
+    <script src='../public/javascripts/domParse.js'></script>
+    <script type="text/javascript">
+    		var prase = function(str){
+    			var results = '';
+    			try{
+    				HTMLParse(he.unescape(str,{strict:true}),{
+    					start:function(tag,attrs,unary){//tag:标签；attrs:将属性组成数组；unary:是否是单标签
+    						if(tag=='script'||tag=='style'||tag=='link'||tag=='iframe'||tag=='frame'){
+    							return;
+    						}
+    						results += '<'+tag;
+//  						for(int i=0,len=attrs.length;i<len;i++){
+//  							results += " "+attrs[i].name+'="'+attrs[i].escaped+'"';
+//  						}
+    						results += (unary?"/";"")+">";
+    					},
+    					end:function(tag){
+    						results += "</"+tag+">";
+    					},
+    					chars:function(text){
+    						results += text;
+    					},
+    					comment:function(text){//注释
+    						results += "<!--"+text+"-->"
+    					}
+    				});
+    				return results;
+    			}catch(e){
+    				console.log(e);
+    			}finally{
+    				
+    			}
+    		}
+    </script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    
+    <textarea name="name" rows="8" cols="80" id="text">
+    		<p>sks<img src="null" alt="" onerror="alert(1)" /></p>
+    </textarea>
+    
+    <button type="button" name="button" id="btn">评论</button>
+    <button type="button" name="button" id="get">获取评论</button>
+    
+  </body>
+  
+  <script type="text/javascript">
+  	var btn = document.getElementById("btn");
+  	var get = document.getElementById("get");
+  	var txt = document.getElementById("text");
+  	
+  	btn.addEventListener("click",function(){
+  		var xhr = new XMLHttpRequest();
+  		var url = '/comment?comment='+txt.value;
+  		xhr.open('GET',url,true);
+  		xhr.onreadystatechange = function(){
+  			if(xhr.readyState==4){
+  				if(xhr.status==200){
+  					console.log(xhr);
+  				}else{
+  					console.log("error");
+  				}
+  			}
+  		};
+  		xhr.send();
+  	});
+  	
+  	get.addEventListener("click",function(){
+  		var xhr = new XMLHttpRequest();
+  		var url = '/getComment';
+  		xhr.open('GET',url,true);
+  		xhr.onreadystatechange = function(){
+  			if(xhr.readyState==4){
+  				if(xhr.status==200){
+  					var com = prase(JSON.parse(xhr.response).comment);//把获取的com转换成DOM节点
+  					var info = document.createElement('span');
+  					info.innerHTML(com);
+  					document.body.appendChild(info);
+  				}else{
+  					console.log("error");
+  				}
+  			}
+  		};
+  		xhr.send();
+  	});
+  </script>
+</html>
